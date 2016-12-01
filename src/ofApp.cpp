@@ -2,7 +2,7 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
-    file = "images/laptop.png";
+    file = "images/turbineL.jpg";
     img.load(file);
     img2.load("images/carl.jpg");
     
@@ -11,7 +11,7 @@ void ofApp::setup(){
     
     img2.resize(w, h);
     
-    ofSetWindowShape(w, h);
+    ofSetWindowShape(w/2, h/2);
     ofSetVerticalSync(false);
     
     shader.load("base");
@@ -47,13 +47,21 @@ void ofApp::setup(){
         ofClear(0,255);
     fbo.end();
     
+    post.begin();
+    ofClear(0,255);
+    post.end();
+    
+    vid.load("clouds.mp4");
+    vid.play();
+    
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
+    vid.update();
     if(save){
         ofPixels savePix;
-        fbo.readToPixels(savePix);
+        post.readToPixels(savePix);
         ofSaveImage(savePix, "saved/"+ofGetTimestampString()+".png");
         save = false;
     }
@@ -97,7 +105,7 @@ void ofApp::draw(){
 //    }
 //    fbo.end();
 //    
-//    fbo.draw(0,0);
+//    fbo.draw(0,0, w/2, h/2);
     
     
      
@@ -106,10 +114,11 @@ void ofApp::draw(){
     if(ofGetKeyPressed(' ')){
         ofClear(0,255);
     }
-    int x = ofRandom(0,w);
-    int y = ofRandom(0,h);
-    int tileSize = ofRandom(20);
-    cam.begin();
+    float x = floor(ofRandom(3)/3*w);
+    float y = floor(ofRandom(3)/3*h);
+    cout<<ofToString(x)<<endl;
+    float tileSize = 100;//ofRandom(60);
+//    cam.begin();
 //        for(int j = -10; j <= 10 ; j++){
 //            ofDrawLine(j*10, -100, j*10, 100);
 //            ofDrawLine(-100, j*10, 100, j*10);
@@ -119,18 +128,27 @@ void ofApp::draw(){
 //            ofDrawLine(0, j*10, -100, 0, j*10, 100);
 //        }
     
-        img.drawSubsection(x -w/2,y - h/2, tileSize, tileSize, x ,y );
-    cam.end();
+//        img.drawSubsection(x -w/2,y - h/2, tileSize, tileSize, x ,y );
+    img.draw(0,0,w,h);
+//    cam.end();
     fbo.end();
     
+    
+//    ofEnableBlendMode(OF_BLENDMODE_SCREEN);
     post.begin();
+    cam.begin();
     shader.begin();
         shader.setUniformTexture("tex0", fbo.getTexture(), 0);
-        fbo.draw(0,0);
+//    float which1 =
+    shader.setUniform3f("which", 1, 1, 1);
+//    shader.setUniform3f("which", (ofGetFrameNum() % 15) == 0 ? 0.0 : 1.0, (ofGetFrameNum()+1) % 15 == 0 ? 0.0 : 1.0, (ofGetFrameNum()+2) % 15 == 0 ? 0.0 : 1.0);
+//        fbo.draw(0,0);
+        fbo.getTexture().drawSubsection(x-w/2,y-h/2, tileSize, tileSize, x ,y );
     shader.end();
+    cam.end();
     post.end();
-    
-    post.draw(0,0);
+    ofDisableBlendMode();
+    post.draw(0,0, w/2, h/2);
     
     
 //    cout<<ofToString(ofSignedNoise(ofGetFrameNum()*0.001))<<endl;
@@ -143,10 +161,10 @@ void ofApp::genXYPositions(){
     int extraMax = 0;
     int extraThresh = 19;
     
-    int barMin = 10;
-    int barMax = 20;
+    int barMin = w*.01;
+    int barMax = w*.02;
     
-    int offSet = 40;
+    int offSet = w*.04;
     yPositions.clear();
     xPositions.clear();
     justRendered = false;

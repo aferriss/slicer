@@ -35,4 +35,5 @@ class ofApp : public ofBaseApp{
     string file;
     ofEasyCam cam;
     ofShader shader;
+    ofVideoPlayer vid;
 };
